@@ -51,6 +51,7 @@ Escribir rápido pero mal no sirve: cada error te devuelve medio carácter.
 
 - **Hasta 50 jugadores por sala**, en una pista o en dos pistas paralelas.
 - **Tres niveles de dificultad**: solo minúsculas; luego mayúsculas, tildes y ñ; y al final puntuación, números y signos `¿? ¡!`.
+- **Frases de temas variados**: anime, rock, ciencia, naturaleza, deportes, comida y vida cotidiana.
 - **Texto propio**: el anfitrión puede escribir sus propias frases (una por línea), ajustarlas a un nivel y guardarlas para reutilizarlas.
 - **Teclado en español de verdad**: las tildes con tecla muerta (´ + a = á) funcionan como en cualquier editor.
 - **24 vehículos originales en 6 colores** (144 combinaciones):
@@ -69,7 +70,7 @@ Escribir rápido pero mal no sirve: cada error te devuelve medio carácter.
 
 | URL | Para qué sirve |
 |---|---|
-| `index.html?practica` | Práctica en solitario, sin sala. Admite `?practica=2` o `?practica=3` para elegir el nivel. |
+| `index.html?practica` | Entrenamiento en solitario, sin sala (también con los botones de nivel en la pantalla de inicio). Admite `?practica=2` o `?practica=3` para elegir el nivel. Al completar las frases, el resultado aparece de inmediato. |
 | `index.html?sala=12345` | Enlace directo con el código de sala ya escrito. |
 | `host.html?demo=40` | Simula 40 jugadores sin conexión: sirve para ver la pista llena o medir el rendimiento de un equipo. |
 

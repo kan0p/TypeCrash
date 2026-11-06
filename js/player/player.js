@@ -268,6 +268,28 @@ function bindJoin() {
   });
 }
 
+/** Página de inicio limpia: sin ?sala ni ?practica. */
+function goHome() {
+  location.href = location.pathname;
+}
+
+/**
+ * «Volver al inicio» desde el resultado. Si el podio de esta ronda ya se publicó,
+ * se sale de la sala (libera cupo y nombre). Si aún no, solo se desconecta esta
+ * pantalla: el resultado queda guardado y cuenta para el podio.
+ */
+async function backHome() {
+  if (!code || !fb) { goHome(); return; }
+  const btn = $('#home-btn');
+  btn.disabled = true;
+  leaving = true;
+  stopWatching();
+  const published = roomState.results?.round === roomState.round;
+  if (published && me) await join.leaveRoom(code, uid, me).catch(console.error);
+  storage.remove(ROOM_KEY);
+  goHome();
+}
+
 async function tryResume() {
   const saved = storage.get(ROOM_KEY, null);
   if (!saved?.code) return false;
@@ -297,6 +319,7 @@ async function runPractice() {
     showScreen('race');
     createRaceSession({
       config, startAt: Date.now() + 3200, round: 1, now: Date.now, vehicle: me.vehicle,
+      finishEarly: true,
       send: () => {}, onFinish: (summary) => showDone(summary, { practice: true }),
     });
   };
@@ -311,7 +334,13 @@ async function main() {
   mountScene($('#join-scene'));
   mountScene($('#wait-scene'));
 
+  $('#home-btn').addEventListener('click', backHome);
   if (params.has('practica')) { runPractice(); return; }
+
+  // Entrenamiento en solitario: no necesita Firebase, funciona aunque no haya conexión.
+  for (const btn of document.querySelectorAll('[data-practice]')) {
+    btn.addEventListener('click', () => { location.href = `${location.pathname}?practica=${btn.dataset.practice}`; });
+  }
 
   $('#join-name').value = storage.get(NAME_KEY, '') || '';
   const fromUrl = (params.get('sala') || '').replace(/\D/g, '').slice(0, 5);

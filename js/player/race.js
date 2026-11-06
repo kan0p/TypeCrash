@@ -19,6 +19,7 @@ const LIVE_INTERVAL_MS = 250; // 4 veces por segundo
  * @param {{type:string,color:string}} opts.vehicle
  * @param {{score:number, errors:number, correct:number}} [opts.base]  totales previos (al retomar)
  * @param {number} [opts.startPhrase]
+ * @param {boolean} [opts.finishEarly]  al completar todas las frases, termina sin esperar el reloj (práctica)
  * @param {(data:{live:object, final?:object}) => void} opts.send
  * @param {(summary:object) => void} opts.onFinish
  */
@@ -152,7 +153,9 @@ export function createRaceSession(opts) {
       s.allDone = true;
       updateMini(false);
       sendAll();
-      showFinished();
+      // En solitario no hay a quién esperar: se pasa al resultado tras ver el sello.
+      if (opts.finishEarly) { els.input.blur(); setTimeout(end, reduced ? 300 : 900); }
+      else showFinished();
     }
   }
 

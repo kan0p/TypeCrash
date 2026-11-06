@@ -32,6 +32,14 @@
       </div>
       <div class="notice notice--error" id="join-error" role="alert" hidden></div>
       <button type="submit" class="btn btn--go btn--big" id="join-submit" disabled>Conectando…</button>
+      <div class="join__practice">
+        <p class="join__practice-title">¿Sin sala? Entrena solo</p>
+        <div class="join__levels" role="group" aria-label="Entrenamiento por nivel">
+          <button type="button" class="btn btn--ghost btn--small" data-practice="1">Nivel 1 · básico</button>
+          <button type="button" class="btn btn--ghost btn--small" data-practice="2">Nivel 2 · tildes</button>
+          <button type="button" class="btn btn--ghost btn--small" data-practice="3">Nivel 3 · signos</button>
+        </div>
+      </div>
     </form>
   </section>
 
@@ -122,7 +130,10 @@
         <div class="done__item"><dt>Precisión</dt><dd class="figures" id="done-accuracy">0%</dd></div>
       </dl>
       <p class="done__next" id="done-next">Mira la pantalla principal. Si hay revancha, entrarás automáticamente.</p>
-      <button type="button" class="btn btn--sun" id="again-btn" hidden>Practicar otra vez</button>
+      <div class="done__actions">
+        <button type="button" class="btn btn--sun" id="again-btn" hidden>Practicar otra vez</button>
+        <button type="button" class="btn btn--paper" id="home-btn">Volver al inicio</button>
+      </div>
     </div>
   </section>
 

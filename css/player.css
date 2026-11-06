@@ -16,16 +16,33 @@
 /* ---------- Ingreso ---------- */
 .join {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(24rem, 34rem);
+  /* El paisaje acompaña, no domina: ocupa menos de la mitad y la tarjeta respira. */
+  grid-template-columns: minmax(0, 0.8fr) minmax(26rem, 1fr);
 }
-.join__poster { --sky-h: 84%; --sun-x: 40%; --sun-size: 26vmin; min-height: 100vh; }
+.join__poster { --sky-h: 84%; --sun-x: 50%; --sun-size: 22vmin; min-height: 100vh; }
 .join__card {
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: var(--space-5);
+  justify-self: center;
+  width: min(100%, 38rem);
   padding: var(--space-7) var(--space-6);
 }
+.join__practice {
+  display: grid;
+  gap: var(--space-3);
+  padding-top: var(--space-5);
+  border-top: 2px solid var(--paper-deep);
+}
+.join__practice-title {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.join__levels { display: flex; flex-wrap: wrap; gap: var(--space-3); }
 .join__title { font-size: clamp(3.5rem, 6vw, 6rem); --mis-color: var(--dusk); }
 .join__lead { font-size: 1.2rem; max-width: 30ch; }
 .input--code {
@@ -397,6 +414,7 @@
 .done__item dd { margin: 0; font-size: 2.6rem; line-height: 1.1; }
 .done__item--score dd { font-size: 3.4rem; color: var(--maiz); }
 .done__next { font-size: 1.15rem; max-width: 45ch; }
+.done__actions { display: flex; flex-wrap: wrap; gap: var(--space-4); justify-content: center; }
 .message__card h2 { font-size: clamp(3rem, 6vw, 5rem); }
 .message__card p { font-size: 1.3rem; max-width: 40ch; }
 
