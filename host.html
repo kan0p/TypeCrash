@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TypeCrash · Anfitrión</title>
+  <meta name="description" content="Pantalla del anfitrión de TypeCrash: configura la carrera y proyecta la pista.">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/big-shoulders.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/host.css">
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.3/dist/confetti.browser.min.js" defer></script>
+  <script type="module" src="js/host/host.js"></script>
+</head>
+<body class="host">
+  <div class="conn" id="conn" role="status" aria-live="polite" hidden>Sin conexión: reintentando…</div>
+
+  <!-- ===== Panel de audio (música y efectos por separado) ===== -->
+  <div class="audio-panel" id="audio-panel" role="dialog" aria-label="Audio" hidden>
+    <p class="audio-panel__title display">Audio</p>
+    <div class="audio-row">
+      <button type="button" class="audio-row__mute" data-mute="music" aria-pressed="false" aria-label="Silenciar música"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3l10-2v12.5a3 3 0 1 1-2-2.8V5L9 6.2v9.3a3 3 0 1 1-2-2.8z" fill="currentColor"/></svg></button>
+      <label class="audio-row__label" for="vol-music">Música</label>
+      <input type="range" class="range audio-row__range" id="vol-music" data-volume="music" min="0" max="100" step="1">
+      <output class="audio-row__value figures" data-volume-out="music">60</output>
+    </div>
+    <div class="audio-row">
+      <button type="button" class="audio-row__mute" data-mute="sfx" aria-pressed="false" aria-label="Silenciar efectos"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7h4l5-4v14l-5-4H3z" fill="currentColor"/><path d="M14 6.5q2.5 3.5 0 7M16.5 4q4.5 6 0 12" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>
+      <label class="audio-row__label" for="vol-sfx">Efectos</label>
+      <input type="range" class="range audio-row__range" id="vol-sfx" data-volume="sfx" min="0" max="100" step="1">
+      <output class="audio-row__value figures" data-volume-out="sfx">80</output>
+    </div>
+  </div>
+
+  <!-- ===== 1. Configuración ===== -->
+  <section class="screen setup" data-screen="setup" hidden>
+    <div class="setup__poster scene" id="setup-scene">
+      <div class="setup__title">
+        <h1 class="display misprint" data-text="TypeCrash">TypeCrash</h1>
+        <p class="setup__tagline">Carreras de tecleo multijugador. Escribe bien, avanza; equivócate, choca.</p>
+      </div>
+      <div class="setup__parade" id="setup-parade" aria-hidden="true"></div>
+    </div>
+
+    <form class="setup__form" id="setup-form" novalidate>
+      <h2 class="setup__heading display" id="setup-heading">Arma la carrera</h2>
+
+      <div class="notice" id="resume" hidden>
+        <svg class="notice__mark" viewBox="0 0 20 20" aria-hidden="true"><path d="M15.5 6.5A7 7 0 1 0 17 11" fill="none" stroke="currentColor" stroke-width="2.6"/><path d="M11.5 2.5h6v6z" fill="currentColor"/></svg>
+        <div class="resume__body">
+          <p id="resume-text">Tienes una sala abierta.</p>
+          <div class="resume__actions">
+            <button type="button" class="btn btn--sun btn--small" id="resume-go">Volver a la sala</button>
+            <button type="button" class="btn btn--ghost btn--small" id="resume-close">Cerrarla</button>
+          </div>
+        </div>
+      </div>
+
+      <fieldset class="group">
+        <legend class="field__label">Duración</legend>
+        <div class="duration">
+          <button type="button" class="stepper" id="dur-minus" aria-label="Restar 5 segundos">−</button>
+          <output class="duration__value figures" id="dur-out" for="dur-range">1:00</output>
+          <button type="button" class="stepper" id="dur-plus" aria-label="Sumar 5 segundos">+</button>
+          <input type="range" id="dur-range" class="range" min="30" max="300" step="5" value="60" aria-label="Duración en segundos">
+        </div>
+        <p class="field__hint">Entre 0:30 y 5:00, de 5 en 5 segundos.</p>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend class="field__label">Texto</legend>
+        <div class="segmented" role="radiogroup" aria-label="Fuente del texto">
+          <label><input type="radio" name="source" value="bank" checked><span>Predefinido</span></label>
+          <label><input type="radio" name="source" value="custom"><span>Texto propio</span></label>
+        </div>
+
+        <div class="source-bank" id="source-bank">
+          <div class="levels" role="radiogroup" aria-label="Nivel">
+            <label class="level"><input type="radio" name="level" value="1" checked><span class="level__n display">1</span><span class="level__d">minúsculas, sin tildes ni puntuación</span></label>
+            <label class="level"><input type="radio" name="level" value="2"><span class="level__n display">2</span><span class="level__d">mayúsculas, tildes y ñ</span></label>
+            <label class="level"><input type="radio" name="level" value="3"><span class="level__n display">3</span><span class="level__d">puntuación, números, ¿? ¡!</span></label>
+          </div>
+        </div>
+
+        <div class="source-custom" id="source-custom" hidden>
+          <div class="saved">
+            <label class="visually-hidden" for="saved-select">Textos guardados</label>
+            <select id="saved-select" class="input input--select">
+              <option value="">Textos guardados…</option>
+            </select>
+            <button type="button" class="btn btn--ghost btn--small" id="saved-delete" disabled>Borrar</button>
+          </div>
+          <label class="visually-hidden" for="custom-text">Texto propio, una frase por línea</label>
+          <textarea id="custom-text" class="input custom-text" rows="6" spellcheck="false"
+            placeholder="Una frase por línea.&#10;Las líneas vacías se ignoran."></textarea>
+          <div class="saved">
+            <label class="visually-hidden" for="saved-name">Nombre para guardar el texto</label>
+            <input id="saved-name" class="input input--small" maxlength="40" placeholder="Nombre del texto (p. ej. Unidad 2)">
+            <button type="button" class="btn btn--paper btn--small" id="saved-save">Guardar texto</button>
+          </div>
+          <label class="check">
+            <input type="checkbox" id="normalize">
+            <span>Ajustar al nivel</span>
+            <select id="normalize-level" class="input input--inline" aria-label="Nivel para ajustar" disabled>
+              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+            </select>
+          </label>
+          <p class="field__hint" id="custom-info">Escribe o pega tus frases.</p>
+        </div>
+      </fieldset>
+
+      <fieldset class="group">
+        <legend class="field__label">Frases</legend>
+        <div class="duration">
+          <button type="button" class="stepper" id="count-minus" aria-label="Una frase menos">−</button>
+          <output class="duration__value figures" id="count-out">5</output>
+          <button type="button" class="stepper" id="count-plus" aria-label="Una frase más">+</button>
+          <span class="field__hint" id="count-hint">al azar del nivel, de la más corta a la más larga</span>
+        </div>
+      </fieldset>
+
+      <div class="notice" id="pace" hidden role="status"></div>
+      <div class="notice notice--error" id="setup-error" hidden role="alert"></div>
+
+      <div class="setup__submit">
+        <button type="submit" class="btn btn--go btn--big" id="setup-submit">Crear sala</button>
+        <button type="button" class="btn btn--ghost" id="setup-cancel" hidden>Volver a la sala</button>
+        <button type="button" class="audio-btn" data-audio-open aria-haspopup="dialog" aria-controls="audio-panel"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7h4l5-4v14l-5-4H3z" fill="currentColor"/><path d="M14 6.5q2.5 3.5 0 7M16.5 4q4.5 6 0 12" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span>Audio</span></button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ===== 2. Lobby ===== -->
+  <section class="screen lobby" data-screen="lobby" hidden>
+    <header class="lobby__head">
+      <div class="lobby__code-block">
+        <p class="lobby__instruction">Entra al juego y escribe este código</p>
+        <p class="lobby__code display" id="lobby-code" aria-label="Código de sala">00000</p>
+      </div>
+      <div class="lobby__side">
+        <p class="lobby__count display"><span id="lobby-count" class="figures">0</span><span class="lobby__of"> / 50</span></p>
+        <p class="lobby__summary" id="lobby-summary"></p>
+        <button type="button" class="btn btn--go btn--big" id="start-btn" disabled>Iniciar</button>
+        <div class="lobby__tools">
+          <button type="button" class="btn btn--ghost btn--small" id="lobby-config">Cambiar configuración</button>
+          <button type="button" class="btn btn--ghost btn--small" id="lobby-close">Cerrar sala</button>
+          <button type="button" class="audio-btn" data-audio-open aria-haspopup="dialog" aria-controls="audio-panel"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7h4l5-4v14l-5-4H3z" fill="currentColor"/><path d="M14 6.5q2.5 3.5 0 7M16.5 4q4.5 6 0 12" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span>Audio</span></button>
+        </div>
+      </div>
+    </header>
+    <div class="lobby__floor">
+      <p class="lobby__empty" id="lobby-empty">Esperando a los primeros jugadores…</p>
+      <ul class="lobby__grid" id="lobby-grid" aria-label="Jugadores conectados"></ul>
+    </div>
+  </section>
+
+  <!-- ===== 3. Carrera ===== -->
+  <section class="screen race" data-screen="race" hidden>
+    <header class="race__top">
+      <ol class="race__phrases" id="race-phrases"></ol>
+      <div class="race__clock">
+        <p class="race__time figures" id="race-time" aria-live="off">0:00</p>
+        <p class="race__code">Sala <span class="figures" id="race-code">00000</span>
+          <button type="button" class="race__stop" id="stop-btn">Terminar ahora</button>
+          <button type="button" class="audio-btn" data-audio-open aria-haspopup="dialog" aria-controls="audio-panel"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7h4l5-4v14l-5-4H3z" fill="currentColor"/><path d="M14 6.5q2.5 3.5 0 7M16.5 4q4.5 6 0 12" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span>Audio</span></button></p>
+      </div>
+    </header>
+    <div class="race__stage scene" id="race-scene">
+      <div class="track-area" id="track-area"></div>
+      <div class="countdown" id="countdown" aria-live="assertive" hidden>
+        <p class="countdown__n display misprint" id="countdown-n" data-text="3">3</p>
+      </div>
+      <p class="race__over display" id="race-over" hidden>¡Tiempo!</p>
+    </div>
+  </section>
+
+  <!-- ===== 4. Resultados ===== -->
+  <section class="screen results" data-screen="results" hidden>
+    <div class="podium" id="podium" aria-label="Podio">
+      <h2 class="podium__title display misprint" data-text="Podio">Podio</h2>
+      <div class="podium__stage" id="podium-stage"></div>
+      <button type="button" class="btn btn--sun podium__next" id="to-table" hidden>Ver tabla</button>
+    </div>
+
+    <div class="standings" id="standings" hidden>
+      <header class="standings__head">
+        <h2 class="display misprint" data-text="Los 10 mejores">Los 10 mejores</h2>
+        <p class="standings__meta" id="standings-meta"></p>
+      </header>
+      <table class="standings__table">
+        <thead>
+          <tr>
+            <th scope="col" class="col-pos">#</th>
+            <th scope="col" class="col-veh"><span class="visually-hidden">Vehículo</span></th>
+            <th scope="col" class="col-name">Nombre</th>
+            <th scope="col" class="col-score">Puntaje</th>
+            <th scope="col" class="col-num">Errores</th>
+            <th scope="col" class="col-num">Precisión</th>
+          </tr>
+        </thead>
+        <tbody id="standings-body"></tbody>
+      </table>
+      <div class="standings__actions">
+        <button type="button" class="btn btn--go btn--big" id="rematch-btn">Revancha</button>
+        <button type="button" class="btn btn--paper" id="newconfig-btn">Nueva configuración</button>
+        <button type="button" class="btn btn--ghost" id="replay-podium">Ver podio</button>
+        <button type="button" class="btn btn--ghost" id="close-btn">Cerrar sala</button>
+        <button type="button" class="audio-btn" data-audio-open aria-haspopup="dialog" aria-controls="audio-panel"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 7h4l5-4v14l-5-4H3z" fill="currentColor"/><path d="M14 6.5q2.5 3.5 0 7M16.5 4q4.5 6 0 12" fill="none" stroke="currentColor" stroke-width="1.8"/></svg><span>Audio</span></button>
+      </div>
+    </div>
+  </section>
+
+  <noscript><p class="noscript">TypeCrash necesita JavaScript activado.</p></noscript>
+</body>
+</html>

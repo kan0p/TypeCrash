@@ -1,0 +1,11 @@
+{
+  "name": "typecrash",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Juego de tecleo multijugador para clases de laboratorio",
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "serve": "npx --yes http-server -c-1 -p 8080 ."
+  }
+}

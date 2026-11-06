@@ -1,0 +1,109 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+
+    "hostRooms": {
+      "$uid": {
+        ".read": "auth != null && auth.uid === $uid",
+        ".write": "auth != null && auth.uid === $uid",
+        "$code": { ".validate": "newData.isNumber()" }
+      }
+    },
+
+    "rooms": {
+      "$code": {
+        ".read": "auth != null",
+        ".write": "auth != null && ((!data.exists() && newData.child('hostUid').val() === auth.uid) || data.child('hostUid').val() === auth.uid)",
+        ".validate": "$code.matches(/^[1-9][0-9]{4}$/) && newData.hasChildren(['hostUid', 'status', 'createdAt', 'round'])",
+
+        "hostUid": { ".validate": "newData.isString() && (!data.exists() || newData.val() === data.val())" },
+        "status": { ".validate": "newData.isString() && newData.val().matches(/^(lobby|countdown|racing|finished)$/)" },
+        "createdAt": { ".validate": "newData.isNumber()" },
+        "startAt": { ".validate": "newData.isNumber()" },
+        "round": { ".validate": "newData.isNumber() && newData.val() >= 1" },
+
+        "config": {
+          ".validate": "newData.hasChildren(['durationSec', 'source', 'phrases', 'phraseTimesMs'])",
+          "durationSec": { ".validate": "newData.isNumber() && newData.val() >= 30 && newData.val() <= 300 && newData.val() % 5 === 0" },
+          "level": { ".validate": "newData.isNumber() && (newData.val() === 1 || newData.val() === 2 || newData.val() === 3)" },
+          "source": { ".validate": "newData.isString() && (newData.val() === 'bank' || newData.val() === 'custom')" },
+          "phrases": {
+            "$i": { ".validate": "$i.matches(/^[0-9]$/) && newData.isString() && newData.val().length >= 1 && newData.val().length <= 120" }
+          },
+          "phraseTimesMs": {
+            "$i": { ".validate": "$i.matches(/^[0-9]$/) && newData.isNumber() && newData.val() > 0" }
+          },
+          "$other": { ".validate": false }
+        },
+
+        "results": {
+          "round": { ".validate": "newData.isNumber()" },
+          "total": { ".validate": "newData.isNumber()" },
+          "positions": {
+            "$uid": { ".validate": "newData.isNumber() && newData.val() >= 1" }
+          },
+          "$other": { ".validate": false }
+        },
+
+        "slots": {
+          "$n": {
+            ".write": "auth != null && ((!data.exists() && newData.val() === auth.uid && root.child('rooms').child($code).child('status').val() === 'lobby') || (data.val() === auth.uid && !newData.exists()))",
+            ".validate": "$n.matches(/^([0-9]|[1-4][0-9])$/) && newData.isString()"
+          }
+        },
+
+        "names": {
+          "$key": {
+            ".write": "auth != null && ((!data.exists() && newData.val() === auth.uid && root.child('rooms').child($code).child('status').val() === 'lobby') || (data.val() === auth.uid && !newData.exists()))",
+            ".validate": "$key.matches(/^[a-z0-9_]{1,40}$/) && newData.isString()"
+          }
+        },
+
+        "players": {
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid && root.child('rooms').child($code).exists() && (data.exists() || root.child('rooms').child($code).child('status').val() === 'lobby')",
+            ".validate": "newData.hasChildren(['name', 'nameKey', 'slot', 'vehicle', 'joinedAt', 'round']) && newData.parent().parent().child('slots').child('' + newData.child('slot').val()).val() === $uid && newData.parent().parent().child('names').child(newData.child('nameKey').val()).val() === $uid",
+
+            "name": { ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 20" },
+            "nameKey": { ".validate": "newData.isString() && newData.val().matches(/^[a-z0-9_]{1,40}$/)" },
+            "slot": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 49" },
+            "joinedAt": { ".validate": "newData.isNumber()" },
+            "round": { ".validate": "newData.isNumber()" },
+
+            "vehicle": {
+              ".validate": "newData.hasChildren(['type', 'color'])",
+              "type": { ".validate": "newData.isString() && newData.val().matches(/^(cuna|muscle|rally|formula|descapotable|carrito|sofa|tina|completo|cohete|zapatilla|tostadora|camioneta|tolva|bus|moto|grua|tractor|jeep|furgon|retro|carrera|monstruo|burbuja)$/)" },
+              "color": { ".validate": "newData.isString() && newData.val().matches(/^(tomate|maiz|cobalto|turquesa|magenta|sal)$/)" },
+              "$other": { ".validate": false }
+            },
+
+            "live": {
+              "round": { ".validate": "newData.isNumber()" },
+              "phraseIndex": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10" },
+              "progress": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 1" },
+              "lastErrorAt": { ".validate": "newData.isNumber()" },
+              "done": { ".validate": "newData.isBoolean()" },
+              "$other": { ".validate": false }
+            },
+
+            "final": {
+              ".validate": "newData.hasChildren(['score', 'errors', 'correct', 'accuracy', 'lastKeyAt', 'round'])",
+              "score": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+              "errors": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+              "correct": { ".validate": "newData.isNumber() && newData.val() >= 0" },
+              "accuracy": { ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 100" },
+              "lastKeyAt": { ".validate": "newData.isNumber()" },
+              "round": { ".validate": "newData.isNumber()" },
+              "$other": { ".validate": false }
+            },
+
+            "$other": { ".validate": false }
+          }
+        },
+
+        "$other": { ".validate": false }
+      }
+    }
+  }
+}

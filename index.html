@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TypeCrash</title>
+  <meta name="description" content="TypeCrash: carreras de tecleo multijugador. Entra con el código de sala y tu nombre.">
+  <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+  <link rel="preload" href="assets/fonts/atkinson-mono.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/player.css">
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js" defer></script>
+  <script type="module" src="js/player/player.js"></script>
+</head>
+<body class="player">
+  <div class="conn" id="conn" role="status" aria-live="polite" hidden>Sin conexión: reintentando…</div>
+
+  <!-- ===== Ingreso ===== -->
+  <section class="screen join" data-screen="join">
+    <div class="join__poster scene" id="join-scene" aria-hidden="true"></div>
+    <form class="join__card" id="join-form" novalidate autocomplete="off">
+      <h1 class="join__title display misprint" data-text="TypeCrash">TypeCrash</h1>
+      <p class="join__lead">Escribe el código que aparece en la pantalla principal.</p>
+      <div class="field">
+        <label class="field__label" for="join-code">Código de sala</label>
+        <input class="input input--code figures" id="join-code" inputmode="numeric" pattern="[0-9]*" maxlength="5" placeholder="12345" required>
+      </div>
+      <div class="field">
+        <label class="field__label" for="join-name">Tu nombre</label>
+        <input class="input" id="join-name" maxlength="20" placeholder="Nombre y apellido" required>
+        <p class="field__hint">De 2 a 20 caracteres. Así te verán en la pista.</p>
+      </div>
+      <div class="notice notice--error" id="join-error" role="alert" hidden></div>
+      <button type="submit" class="btn btn--go btn--big" id="join-submit" disabled>Conectando…</button>
+    </form>
+  </section>
+
+  <!-- ===== Garaje: elegir vehículo ===== -->
+  <section class="screen garage" data-screen="garage" hidden>
+    <header class="garage__head">
+      <h2 class="display">Elige tu vehículo</h2>
+      <p class="garage__who" id="garage-who"></p>
+    </header>
+    <div class="garage__body">
+      <div class="garage__preview" id="garage-preview" aria-live="polite"></div>
+      <div class="garage__pick">
+        <div class="garage__grid" role="radiogroup" aria-label="Vehículo" id="garage-vehicles"></div>
+        <div class="garage__colors" role="radiogroup" aria-label="Color" id="garage-colors"></div>
+        <div class="notice notice--error" id="garage-error" role="alert" hidden></div>
+        <div class="garage__actions">
+          <button type="button" class="btn btn--ghost" id="garage-back">Volver</button>
+          <button type="button" class="btn btn--go btn--big" id="garage-go">Entrar a la carrera</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Espera ===== -->
+  <section class="screen wait" data-screen="wait" hidden>
+    <div class="wait__scene scene" id="wait-scene">
+      <div class="wait__road"><div class="wait__car" id="wait-car"></div></div>
+    </div>
+    <div class="wait__text">
+      <h2 class="display">Esperando que el anfitrión inicie la carrera</h2>
+      <p class="wait__who" id="wait-who"></p>
+      <p class="notice" id="wait-note" hidden></p>
+      <ul class="wait__rules">
+        <li><strong>Escribe la frase tal cual:</strong> mayúsculas, tildes y signos cuentan.</li>
+        <li><strong>Si te equivocas, sigue:</strong> el error queda marcado y el cursor avanza. Borrar no funciona.</li>
+        <li><strong>Cada frase tiene su tiempo.</strong> Si se acaba, pasas a la siguiente.</li>
+      </ul>
+      <button type="button" class="btn btn--ghost btn--small" id="leave-btn">Salir de la sala</button>
+    </div>
+  </section>
+
+  <!-- ===== Carrera ===== -->
+  <section class="screen race" data-screen="race" hidden>
+    <p class="narrow-only narrow-msg">Esta carrera se juega desde un computador con teclado.</p>
+
+    <div class="race__wide">
+      <header class="race__bar">
+        <p class="race__count"><span class="visually-hidden">Frase </span><span class="figures" id="phrase-n">1</span><span class="race__of"> / <span class="figures" id="phrase-total">5</span></span></p>
+        <div class="race__timer" aria-hidden="true"><span class="race__timer-fill" id="phrase-fill"></span></div>
+        <p class="race__clock figures" id="global-clock" aria-label="Tiempo restante">1:00</p>
+      </header>
+
+      <div class="typing" id="typing">
+        <p class="stamp" id="phrase-stamp" aria-hidden="true"></p>
+        <p class="typing__phrase" id="phrase" aria-live="off"></p>
+        <p class="typing__next" id="next-phrase"></p>
+        <textarea class="typing__input" id="type-input" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" aria-label="Escribe aquí la frase"></textarea>
+        <button type="button" class="typing__refocus" id="refocus" hidden>
+          <span class="display">Haz clic aquí para seguir escribiendo</span>
+        </button>
+        <div class="race__countdown" id="player-countdown" hidden>
+          <p class="display misprint" id="player-countdown-n" data-text="3">3</p>
+        </div>
+        <div class="typing__finished" id="finished-note" hidden>
+          <p class="display">¡Terminaste todas las frases!</p>
+          <p>Espera a que termine el tiempo para ver tu resultado.</p>
+        </div>
+      </div>
+
+      <div class="mini" aria-hidden="true">
+        <div class="mini__road"><div class="mini__car" id="mini-car"></div></div>
+        <div class="mini__finish"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== Resultado ===== -->
+  <section class="screen done" data-screen="done" hidden>
+    <div class="done__card">
+      <h2 class="done__title display misprint" data-text="¡Tiempo!" id="done-title">¡Tiempo!</h2>
+      <div class="done__plate">
+        <div class="done__car" id="done-car"></div>
+        <div class="done__column"><p class="done__position" id="done-position">Calculando posiciones…</p></div>
+      </div>
+      <dl class="done__caption">
+        <div class="done__item done__item--score"><dt>Puntaje</dt><dd class="figures" id="done-score">0</dd></div>
+        <div class="done__item"><dt>Errores</dt><dd class="figures" id="done-errors">0</dd></div>
+        <div class="done__item"><dt>Precisión</dt><dd class="figures" id="done-accuracy">0%</dd></div>
+      </dl>
+      <p class="done__next" id="done-next">Mira la pantalla principal. Si hay revancha, entrarás automáticamente.</p>
+      <button type="button" class="btn btn--sun" id="again-btn" hidden>Practicar otra vez</button>
+    </div>
+  </section>
+
+  <!-- ===== Mensajes ===== -->
+  <section class="screen message" data-screen="message" hidden>
+    <div class="message__card">
+      <h2 class="display" id="message-title">Sala cerrada</h2>
+      <p id="message-text">El anfitrión cerró la sala.</p>
+      <button type="button" class="btn btn--go" id="message-btn">Entrar a otra sala</button>
+    </div>
+  </section>
+
+  <noscript><p class="noscript">TypeCrash necesita JavaScript activado.</p></noscript>
+</body>
+</html>

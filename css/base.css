@@ -1,0 +1,319 @@
+/* TypeCrash: tokens, reset, tipografía y piezas compartidas.
+   Mundo visual: afiche serigrafiado del desierto (tintas planas, contorno desregistrado). */
+
+@font-face {
+  font-family: 'Big Shoulders';
+  src: url('../assets/fonts/big-shoulders.woff2') format('woff2');
+  font-weight: 100 900;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Atkinson Hyperlegible Next';
+  src: url('../assets/fonts/atkinson-next.woff2') format('woff2');
+  font-weight: 200 800;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Atkinson Hyperlegible Mono';
+  src: url('../assets/fonts/atkinson-mono.woff2') format('woff2');
+  font-weight: 200 800;
+  font-display: swap;
+}
+
+:root {
+  /* Tintas */
+  --ink: #16141a;
+  --ink-soft: #3b3540;
+  --paper: #eef0ec;
+  --paper-deep: #dde2dc;
+  --cobalt: #1d2f6f;
+  --cobalt-night: #142152;
+  --cobalt-mid: #2d4a9e;
+  --dusk: #e2457a;
+  --dusk-deep: #b8285c;
+  --ochre: #e9892b;
+  --copper: #b5532a;
+  --oxide: #7a2e1f;
+  --maiz: #f2b52a;
+  --asphalt: #2a2530;
+  --asphalt-line: #4a4352;
+
+  /* Estados (nunca solo por color: van con subrayado o símbolo) */
+  --ok: #1d6b45;
+  --err: #cf2a1e;
+  --pending: #6f6674;
+
+  /* Tipografía */
+  --font-display: 'Big Shoulders', 'Arial Narrow', sans-serif;
+  --font-ui: 'Atkinson Hyperlegible Next', 'Segoe UI', sans-serif;
+  --font-mono: 'Atkinson Hyperlegible Mono', 'Consolas', monospace;
+
+  /* Ritmo */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+  --space-8: 4.5rem;
+
+  /* Desregistro de serigrafía */
+  --mis-x: -3px;
+  --mis-y: -2px;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  color-scheme: light;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 1.125rem;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Grano de trama serigráfica sobre toda la página */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1000;
+  opacity: 0.11;
+  mix-blend-mode: multiply;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.09 0 0 0 0 0.08 0 0 0 0 0.1 0 0 0 0.55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+::selection { background: var(--maiz); color: var(--ink); }
+
+/* Foco: cobalto sobre papel (contraste ≥ 3:1); maíz sobre los fondos de tinta oscura */
+:focus-visible {
+  outline: 3px solid var(--cobalt);
+  outline-offset: 3px;
+}
+.podium :focus-visible, .done :focus-visible, .message :focus-visible,
+.lobby__floor :focus-visible, .race__stage :focus-visible { outline-color: var(--maiz); }
+
+* { scrollbar-color: var(--copper) var(--paper-deep); scrollbar-width: thin; }
+
+h1, h2, h3 { margin: 0; line-height: 1; text-wrap: balance; }
+p { margin: 0; text-wrap: pretty; }
+button, input, textarea, select { font: inherit; color: inherit; }
+
+[hidden] { display: none !important; }
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* ---- Tipografía de afiche ---- */
+.display {
+  font-family: var(--font-display);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  line-height: 0.88;
+}
+
+/* Titular con desregistro: una copia de la tinta corrida detrás */
+.misprint {
+  position: relative;
+  display: inline-block;
+  isolation: isolate;
+}
+.misprint::before {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  transform: translate(var(--mis-x), var(--mis-y));
+  color: var(--mis-color, var(--dusk));
+  z-index: -1;
+  pointer-events: none;
+}
+
+.figures {
+  font-family: var(--font-display);
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+}
+
+/* ---- Botones: bloques de tinta con contorno desregistrado ---- */
+.btn {
+  --btn-bg: var(--ink);
+  --btn-fg: var(--paper);
+  --btn-line: var(--ink);
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: 3rem;
+  padding: 0.7rem 1.4rem;
+  border: 0;
+  background: var(--btn-bg);
+  color: var(--btn-fg);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  isolation: isolate;
+  transition: transform 160ms var(--ease-out), background-color 160ms var(--ease-out);
+}
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--btn-line);
+  transform: translate(var(--mis-x), var(--mis-y));
+  pointer-events: none;
+  transition: transform 160ms var(--ease-out);
+}
+.btn:hover:not(:disabled) { transform: translate(-1px, -1px); }
+.btn:hover:not(:disabled)::before { transform: translate(-5px, -4px); }
+.btn:active:not(:disabled) { transform: translate(1px, 1px); }
+.btn:active:not(:disabled)::before { transform: translate(0, 0); }
+.btn:disabled { cursor: not-allowed; opacity: 0.45; }
+
+.btn--go { --btn-bg: var(--dusk); --btn-fg: var(--ink); }
+.btn--sun { --btn-bg: var(--maiz); --btn-fg: var(--ink); }
+.btn--paper { --btn-bg: var(--paper); --btn-fg: var(--ink); }
+.btn--ghost {
+  --btn-bg: transparent;
+  --btn-fg: currentColor;
+  --btn-line: currentColor;
+}
+.btn--big { min-height: 4.25rem; padding: 0.9rem 2.4rem; font-size: 2rem; }
+.btn--small { min-height: 2.4rem; padding: 0.35rem 0.9rem; font-size: 1.05rem; }
+
+/* ---- Campos ---- */
+.field { display: grid; gap: var(--space-2); }
+.field__label {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.15rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.field__hint { font-size: 0.95rem; color: var(--ink-soft); }
+.input {
+  width: 100%;
+  min-height: 3.25rem;
+  padding: 0.6rem 0.9rem;
+  border: 2px solid var(--ink);
+  border-radius: 0;
+  background: #fbfcfa;
+  font-size: 1.3rem;
+  caret-color: var(--dusk-deep);
+}
+.input::placeholder { color: #6a6270; }
+.input:focus-visible { outline-offset: 0; box-shadow: 0 0 0 3px var(--maiz); outline: none; }
+.input[aria-invalid='true'] { border-color: var(--err); }
+
+.notice {
+  display: flex;
+  gap: var(--space-3);
+  align-items: flex-start;
+  padding: var(--space-3) var(--space-4);
+  background: var(--paper-deep);
+  font-size: 1rem;
+}
+.notice--error { background: #f7d8d2; color: #6e130d; }
+.notice__mark {
+  flex: none;
+  width: 1.3rem;
+  height: 1.3rem;
+  margin-top: 0.1rem;
+  color: var(--copper);
+}
+.notice--error .notice__mark { color: var(--err); }
+
+/* Iconos SVG en línea */
+.icon { width: 1.2em; height: 1.2em; flex: none; }
+
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* ---- Escena del desierto (compartida) ---- */
+.scene {
+  position: relative;
+  overflow: hidden;
+  background: var(--copper);
+  isolation: isolate;
+}
+.scene__sky {
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: var(--sky-h, 58%);
+  display: grid;
+  grid-template-rows: 3fr 2fr 1.2fr 0.8fr;
+  z-index: -3;
+}
+.scene__band--1 { background: var(--cobalt-night); }
+.scene__band--2 { background: var(--cobalt); }
+.scene__band--3 { background: var(--dusk); }
+.scene__band--4 { background: var(--ochre); }
+.scene__sun {
+  position: absolute;
+  left: var(--sun-x, 68%);
+  bottom: 4%;
+  width: var(--sun-size, 18vmin);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: var(--maiz);
+  box-shadow: var(--mis-x) var(--mis-y) 0 0 var(--dusk-deep);
+}
+.scene__layer {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -2;
+}
+.scene__strip {
+  display: flex;
+  width: 200%;
+  height: 100%;
+  will-change: transform;
+}
+.scene__strip svg { width: 50%; height: 100%; display: block; }
+.scene__layer--far { top: calc(var(--sky-h, 58%) - 22%); height: 26%; }
+.scene__layer--mid { top: calc(var(--sky-h, 58%) - 14%); height: 22%; }
+.scene__layer--near { top: calc(var(--sky-h, 58%) - 6%); height: 16%; }
+/* Postes delante de la falda del cerro cercano: la base pisa el suelo, sobre la pista */
+.scene__layer--posts { top: calc(var(--sky-h, 58%) + 2%); height: 13%; }
+
+/* Líneas de la carretera: una franja del doble del ancho de la escena que el parallax
+   desplaza -50 % en el mismo tiempo que los postes. 20 tramos por ancho de escena. */
+.road-lines {
+  position: absolute;
+  left: 0;
+  right: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+.road-lines__strip {
+  width: calc(var(--scene-w, 100vw) * 2);
+  height: 100%;
+  background: linear-gradient(90deg, var(--line, var(--asphalt-line)) 50%, transparent 50%) 0 0 / calc(var(--scene-w, 100vw) / 20) 100% repeat-x;
+  will-change: transform;
+}
