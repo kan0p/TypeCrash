@@ -98,7 +98,8 @@ TypeCrash es un sitio estático: no hay servidor propio ni paso de compilación,
 index.html                 pantalla del jugador
 host.html                  pantalla principal (anfitrión)
 css/                       base.css (tokens y escena), player.css, host.css
-js/config.js               configuración web de Firebase
+js/config.example.js       plantilla de la configuración web de Firebase (js/config.js no se versiona)
+.github/workflows/         deploy a GitHub Pages: genera js/config.js desde los secrets
 js/firebase.js             app, autenticación anónima, reloj del servidor
 js/core/                   lógica pura y testeada: puntaje, motor de tecleo, tiempos, textos
 js/data/phrase-bank.js     banco de frases por nivel
@@ -133,9 +134,24 @@ Necesitas una cuenta de Google (para Firebase), una de GitHub y [Node.js](https:
 
 ### 2. Configurar la app web
 
-En **Configuración del proyecto → Tus apps → Web**, registra una app y copia su `firebaseConfig` en `js/config.js`. Revisa que incluya `databaseURL`.
+En **Configuración del proyecto → Tus apps → Web**, registra una app y anota los valores de su `firebaseConfig`. Revisa que incluya `databaseURL`.
 
-> La configuración web es pública por diseño: identifica el proyecto, pero no da permisos. Los datos los protegen las reglas de `database.rules.json`.
+El repositorio no incluye `js/config.js`: cada quien usa su propio proyecto de Firebase.
+
+- **Local:** copia `js/config.example.js` como `js/config.js` y pon tus valores. Ese archivo está en `.gitignore`.
+- **GitHub Pages:** en **Settings → Secrets and variables → Actions → New repository secret** crea estos 7 secrets:
+
+| Secret | Valor de `firebaseConfig` |
+|---|---|
+| `FIREBASE_API_KEY` | `apiKey` |
+| `FIREBASE_AUTH_DOMAIN` | `authDomain` |
+| `FIREBASE_DATABASE_URL` | `databaseURL` |
+| `FIREBASE_PROJECT_ID` | `projectId` |
+| `FIREBASE_STORAGE_BUCKET` | `storageBucket` |
+| `FIREBASE_MESSAGING_SENDER_ID` | `messagingSenderId` |
+| `FIREBASE_APP_ID` | `appId` |
+
+> La configuración web de Firebase termina siendo visible en el navegador de quien abre el juego. Lo que protege los datos son las reglas de `database.rules.json` y las restricciones de la API key (en Google Cloud, limítala al dominio de tu sitio).
 
 ### 3. Publicar las reglas de seguridad
 
@@ -149,8 +165,9 @@ npx firebase-tools deploy --only database --project TU-PROYECTO   # publica data
 ### 4. Publicar en GitHub Pages
 
 1. Sube el repositorio a GitHub como **público**.
-2. **Settings → Pages → Source: Deploy from a branch → `main` / `(root)` → Save.**
-3. En un par de minutos el juego queda disponible en:
+2. **Settings → Pages → Build and deployment → Source: GitHub Actions.**
+3. Cada push a `main` ejecuta el workflow `Deploy a GitHub Pages` (pestaña **Actions**), que genera `js/config.js` con los secrets y publica el sitio. También puedes lanzarlo a mano con **Run workflow**.
+4. En un par de minutos el juego queda disponible en:
    - Jugadores: `https://TU-USUARIO.github.io/TypeCrash/`
    - Anfitrión: `https://TU-USUARIO.github.io/TypeCrash/host.html`
 
@@ -159,6 +176,8 @@ npx firebase-tools deploy --only database --project TU-PROYECTO   # publica data
 En Firebase: **Authentication → Configuración → Dominios autorizados → Agregar dominio** → `TU-USUARIO.github.io`.
 
 ### Desarrollo local
+
+Primero crea `js/config.js` a partir de `js/config.example.js` (ver paso 2).
 
 Los ES modules no se cargan si abres el archivo con doble clic (`file://`), así que hay que servir la carpeta:
 

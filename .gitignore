@@ -3,3 +3,6 @@ node_modules/
 *.log
 .DS_Store
 .impeccable/
+
+# Configuración de Firebase con valores reales (se genera en el deploy desde los secrets)
+js/config.js
